@@ -48,7 +48,7 @@ public class ProductService {
      * @return prodcuct对象
      * @throws BusinessException
      */
-    public Product findProductById(Long shopId, Long id) throws BusinessException {
+    public Product findProductById(Long shopId, Long id,boolean loadShop, boolean loadTemplate) throws BusinessException {
         logger.debug("findProductById: id = {}", id);
         String key = BloomFilter.PRETECT_FILTERS.get("ProductId");
         if (redisUtil.bfExist(key, id)) {
@@ -56,7 +56,7 @@ public class ProductService {
         }
         Product bo = null;
         try {
-            bo = this.productDao.findValidById(shopId, id);
+            bo = this.productDao.findValidById(shopId, id,loadShop, loadTemplate);
         } catch (BusinessException e) {
             if (ReturnNo.RESOURCE_ID_NOTEXIST == e.getErrno()) {
                 redisUtil.bfAdd(key, id);

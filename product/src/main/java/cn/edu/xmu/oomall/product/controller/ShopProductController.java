@@ -134,8 +134,10 @@ public class ShopProductController {
     @GetMapping("products/{id}")
     @Audit(departName = "shops")
     @Transactional(propagation = Propagation.REQUIRED)
-    public ReturnObject getProductId(@PathVariable Long shopId, @PathVariable Long id){
-        Product product = this.productService.findProductById_Test3(shopId, id);
+    public ReturnObject getProductId(@PathVariable Long shopId, @PathVariable Long id,
+                                     @RequestParam(defaultValue = "false") boolean loadShop,
+                                     @RequestParam(defaultValue = "false") boolean loadTemplate){
+        Product product = this.productService.findProductById(shopId, id,loadShop, loadTemplate);
         return new ReturnObject(new FullProductVo(product));
     }
 

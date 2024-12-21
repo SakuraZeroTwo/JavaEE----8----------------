@@ -72,7 +72,7 @@ public class ProductDao {
      * @param id product Id
      * @return product对象
      */
-    public Product findValidById(Long shopId, Long id) throws RuntimeException {
+    public Product findValidById(Long shopId, Long id,boolean loadShop, boolean loadTemplate) throws RuntimeException {
         logger.debug("findValidById: id = {}", id);
         String key = String.format(KEY, id);
         ValidOnSaleProductFactory factory = new ValidOnSaleProductFactory(id);
@@ -84,7 +84,7 @@ public class ProductDao {
             }
             bo = factory.build(bo);
         }else {
-            bo = this.findBo(shopId, id, factory);
+            bo = this.findBo(shopId, id, factory, loadShop, loadTemplate);
         }
         return bo;
     }
@@ -133,7 +133,7 @@ public class ProductDao {
      * <p>
      * date: 2022-12-11 7:05
      */
-    private Product findBo(Long shopId, Long productId, ProductFactory factory) {
+    private Product findBo(Long shopId, Long productId, ProductFactory factory,boolean loadShop, boolean loadTemplate) {
         Optional<ProductPo> ret = this.productPoMapper.findById(productId);
         if (ret.isPresent()) {
             ProductPo po = ret.get();
@@ -141,7 +141,19 @@ public class ProductDao {
                 throw new BusinessException(ReturnNo.RESOURCE_ID_OUTSCOPE, String.format(ReturnNo.RESOURCE_ID_OUTSCOPE.getMessage(), "产品", productId, shopId));
             }
             String key = String.format(KEY, productId);
-            return factory.build(po, Optional.of(key));
+            Product product = factory.build(po, Optional.of(key));
+            // 仅在需要时加载商铺和模板
+            if (loadShop) {
+                logger.debug("Getting shop!");
+                product.getShop();
+            }
+
+            if (loadTemplate) {
+                logger.debug("Getting template!");
+                product.getTemplate();
+            }
+            return product;
+//            return factory.build(po, Optional.of(key));
         } else {
             throw new BusinessException(ReturnNo.RESOURCE_ID_NOTEXIST, String.format(ReturnNo.RESOURCE_ID_NOTEXIST.getMessage(), "产品", productId));
         }
